@@ -1,0 +1,20 @@
+/* frontend/src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Example @font-face rules if you added them */
+/*
+@font-face {
+  font-family: 'Comme-Medium';
+  src: url('./assets/fonts/Comme-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Comme-SemiBold';
+  src: url('./assets/fonts/Comme-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+*/
