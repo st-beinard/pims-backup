@@ -1,71 +1,43 @@
 // frontend/src/components/Sidebar.jsx
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
-// Updated navItems array
-const navItems = [
-    { to: "/dashboard", label: "Dashboard", icon: "🏠" },
-    { to: "/events", label: "Events", icon: "📅" },
-    { to: "/tasks", label: "Tasks", icon: "✔️" }, // Tasks link is active
-    { to: "/projects", label: "Projects", icon: "📁" }, // Projects link commented out for now
-    // Or, if you want a disabled-looking placeholder for Projects:
-    // { to: "#", label: "Projects (Soon)", icon: "📁", disabled: true }, 
-    { to: "/attendance", label: "Attendance", icon: "👥" },
-];
+const NavItem = ({ to, icon, label }) => {
+    const location = useLocation();
+    const isActive = location.pathname === to || (to === "/dashboard" && location.pathname === "/");
 
-const SidebarItem = ({ to, label, icon, disabled = false }) => ( // Added disabled prop
-    <li>
-        <NavLink
-            to={disabled ? "#" : to} // If disabled, NavLink goes to "#" (no navigation)
-            // Apply active styles using the isActive prop provided by NavLink
-            // Also apply disabled styles
-            className={({ isActive }) =>
-                `flex items-center p-2 space-x-3 rounded-md transition-colors text-sm font-medium
-                ${disabled 
-                    ? 'text-gray-400 cursor-not-allowed bg-gray-100' // Disabled style
-                    : isActive
-                        ? 'bg-indigo-100 text-indigo-700 shadow-sm' // Active link style
-                        : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900' // Inactive link style
-                }`
-            }
-            // Prevent click if disabled (though NavLink to "#" also does this)
-            onClick={(e) => { if (disabled) e.preventDefault(); }} 
-            aria-disabled={disabled}
-        >
-            {icon && <span className="text-lg w-6 text-center">{icon}</span>}
-            <span>{label}</span>
-        </NavLink>
-    </li>
-);
+    return (
+        <Link to={to} className="block">
+            <li className={`mb-1 p-3 rounded-md cursor-pointer flex items-center space-x-3 text-sm transition-colors duration-150 ease-in-out
+                            ${isActive
+                                ? 'bg-blue-600 text-white font-semibold shadow-md'
+                                : 'text-gray-700 hover:bg-blue-100 hover:text-blue-600'
+                            }`}
+            >
+                {icon && <span className="text-lg">{icon}</span>}
+                <span>{label}</span>
+            </li>
+        </Link>
+    );
+};
 
 const Sidebar = () => {
     return (
-        <div className="w-60 h-screen bg-white p-4 border-r border-gray-200 flex-shrink-0 shadow-lg flex flex-col">
-            <div className="mb-8 text-center py-2">
-                <Link to="/dashboard" className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
-                    P.I.M.S
+        <div className="w-60 h-screen bg-white p-4 border-r shadow-lg flex-shrink-0 flex flex-col">
+            <div className="mb-8 text-center">
+                <Link to="/dashboard" className="inline-block">
+                    <h1 className="text-3xl font-bold text-blue-600">PIMS</h1>
                 </Link>
             </div>
-
             <nav className="flex-grow">
-                <ul className="space-y-1.5">
-                    {navItems.map((item) => (
-                        <SidebarItem 
-                            key={item.label} // Using label as key if 'to' can be '#'
-                            to={item.to} 
-                            label={item.label} 
-                            icon={item.icon}
-                            disabled={item.disabled} // Pass disabled prop
-                        />
-                    ))}
-                    {/* Manually add Projects link if you prefer not to modify navItems array directly now */}
-                     
+                <ul className="space-y-1">
+                    <NavItem to="/dashboard" label="Dashboard" icon="🏠" />
+                    <NavItem to="/events" label="Events" icon="📅" />
+                    <NavItem to="/tasks" label="Tasks" icon="✔️" />
+                    <NavItem to="/projects" label="Projects" icon="📁" />
+                    <NavItem to="/attendance" label="Attendance" icon="👥" />
                 </ul>
             </nav>
-
-            <div className="mt-auto pt-4 border-t border-gray-200">
-                <p className="text-xs text-gray-400 text-center">© {new Date().getFullYear()} Your App</p>
-            </div>
         </div>
     );
 };

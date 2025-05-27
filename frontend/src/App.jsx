@@ -3,75 +3,76 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 
+// Page Imports
 import SignupPage from './pages/SignupPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
-import EventsPage from './pages/EventsPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ProjectsPage from './pages/ProjectsPage'; // <-- UNCOMMENTED and ensure file exists
-import TasksPage from './pages/TasksPage';     // Keep TasksPage if you have it
+import AttendancePage from './pages/AttendancePage';
+import EventsPage from './pages/EventsPage';
+import TasksPage from './pages/TasksPage';
+import ProjectsPage from './pages/ProjectsPage';
 
+// Component Imports
+import Layout from './components/Layout'; // <<< IMPORT THE LAYOUT COMPONENT
+
+// --- ProtectedRoute and PublicRoute ---
 function ProtectedRoute({ children }) {
-  const { currentUser } = useAuth();
-  // Optional: Add a loading state check from your AuthContext if it provides one
-  // if (authLoading) return <div>Loading Authentication...</div>;
-  return currentUser ? children : <Navigate to="/login" replace />;
+  const { currentUser, loadingAuth } = useAuth();
+  if (loadingAuth) {
+    return <div className="flex justify-center items-center h-screen text-gray-700">Loading Authentication...</div>;
+  }
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
 }
 
 function PublicRoute({ children }) {
-  const { currentUser } = useAuth();
-  // Optional: Add a loading state check
-  // if (authLoading) return <div>Loading Authentication...</div>;
-  return !currentUser ? children : <Navigate to="/dashboard" replace />;
+  const { currentUser, loadingAuth } = useAuth();
+  if (loadingAuth) {
+    return <div className="flex justify-center items-center h-screen text-gray-700">Loading Authentication...</div>;
+  }
+  if (currentUser) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
 }
+// --- End Protected/Public ---
 
 function App() {
-  const { currentUser } = useAuth(); 
+  const { currentUser, loadingAuth } = useAuth();
+
+  if (loadingAuth) {
+    return <div className="flex justify-center items-center h-screen text-lg font-semibold text-gray-700">Initializing PIMS...</div>;
+  }
 
   return (
     <BrowserRouter>
-        <Routes>
-          {/* Protected Routes */}
-          <Route path="/dashboard" element={
-            <ProtectedRoute><DashboardPage /></ProtectedRoute>
-          } />
-          <Route path="/events" element={
-            <ProtectedRoute><EventsPage /></ProtectedRoute>
-          } />
-          <Route path="/projects" element={ // <-- UNCOMMENTED and route activated
-            <ProtectedRoute><ProjectsPage /></ProtectedRoute>
-          } />
-          <Route path="/tasks" element={
-            <ProtectedRoute><TasksPage /></ProtectedRoute>
-          } />
-          {/* Add other protected routes like /attendance here later */}
+      <Routes>
+        {/* --- Protected Routes use the Layout component --- */}
+        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/attendance" element={<AttendancePage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/projects" element={<ProjectsPage />} />
+          {/* Add any other pages that should have the sidebar and topbar here */}
+        </Route>
+        {/* --- End Protected Routes with Layout --- */}
 
+        {/* --- Public Routes (do not use the Layout) --- */}
+        <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
+        {/* --- End Public Routes --- */}
 
-          {/* Root path navigation */}
-          <Route
-            path="/"
-            element={
-              currentUser !== undefined ?
-                (currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />)
-                : <div>Loading...</div> // Or some other loading indicator
-            }
-          />
+        {/* Root path redirect based on auth state */}
+        <Route path="/" element={<Navigate to={currentUser ? "/dashboard" : "/login"} replace />} />
 
-          {/* Public Routes */}
-          <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
-          <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-          <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
-
-          {/* Catch-all route */}
-          <Route
-            path="*"
-            element={
-              currentUser !== undefined ?
-                (currentUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />)
-                : <div>Loading...</div>
-            }
-          />
-        </Routes>
+        {/* Catch-all route */}
+        <Route path="*" element={<Navigate to={currentUser ? "/dashboard" : "/login"} replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }
