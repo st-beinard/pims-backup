@@ -101,7 +101,15 @@ export default function AttendancePage() {
     return (
         <div className="p-6 md:p-8"> {/* Padding for the content area */}
             <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                <h2 className="text-2xl font-semibold text-gray-700">Attendance Overview</h2>
+                {/* The H2 for "Attendance Overview" was here and is now removed. */}
+                {/* If you want to ensure the button stays to the right, and there's no other content on the left,
+                    you can add an empty div or a div with flex-grow if needed,
+                    or simply let the button be the only item if that's the desired layout.
+                    For now, assuming the button is the primary element in this line if the title is gone.
+                    If you want the button on the far right of the page, the parent div needs to span width.
+                */}
+                {/* To push button to the right if it's the only element in this flex container: */}
+                <div className="flex-grow"></div> {/* This invisible div will take up space */}
                 <button
                     onClick={() => alert('Open Scanner functionality here!')}
                     className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg shadow-md flex items-center space-x-2 transition duration-150 w-full sm:w-auto"
