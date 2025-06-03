@@ -12,6 +12,7 @@ import AttendancePage from './pages/AttendancePage';
 import EventsPage from './pages/EventsPage';
 import TasksPage from './pages/TasksPage';
 import ProjectsPage from './pages/ProjectsPage';
+import ProfilePage from './pages/ProfilePage'; // <<< --- NEW: IMPORT ProfilePage ---
 
 // Component Imports
 import Layout from './components/Layout'; // <<< IMPORT THE LAYOUT COMPONENT
@@ -57,6 +58,7 @@ function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
+          <Route path="/profile" element={<ProfilePage />} /> {/* <<< --- NEW: ADDED PROFILE ROUTE --- */}
           {/* Add any other pages that should have the sidebar and topbar here */}
         </Route>
         {/* --- End Protected Routes with Layout --- */}
