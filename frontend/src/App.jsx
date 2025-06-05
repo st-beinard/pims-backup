@@ -12,12 +12,13 @@ import AttendancePage from './pages/AttendancePage';
 import EventsPage from './pages/EventsPage';
 import TasksPage from './pages/TasksPage';
 import ProjectsPage from './pages/ProjectsPage';
-import ProfilePage from './pages/ProfilePage'; // <<< --- NEW: IMPORT ProfilePage ---
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage'; // <<< --- NEW: IMPORT SettingsPage ---
 
 // Component Imports
-import Layout from './components/Layout'; // <<< IMPORT THE LAYOUT COMPONENT
+import Layout from './components/Layout';
 
-// --- ProtectedRoute and PublicRoute ---
+// --- ProtectedRoute and PublicRoute (YOUR EXISTING CODE) ---
 function ProtectedRoute({ children }) {
   const { currentUser, loadingAuth } = useAuth();
   if (loadingAuth) {
@@ -58,21 +59,21 @@ function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/projects" element={<ProjectsPage />} />
-          <Route path="/profile" element={<ProfilePage />} /> {/* <<< --- NEW: ADDED PROFILE ROUTE --- */}
-          {/* Add any other pages that should have the sidebar and topbar here */}
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} /> {/* <<< --- NEW: ADDED SETTINGS ROUTE --- */}
         </Route>
         {/* --- End Protected Routes with Layout --- */}
 
-        {/* --- Public Routes (do not use the Layout) --- */}
+        {/* --- Public Routes (do not use the Layout) (YOUR EXISTING CODE) --- */}
         <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
         <Route path="/forgot-password" element={<PublicRoute><ForgotPasswordPage /></PublicRoute>} />
         {/* --- End Public Routes --- */}
 
-        {/* Root path redirect based on auth state */}
+        {/* Root path redirect based on auth state (YOUR EXISTING CODE) */}
         <Route path="/" element={<Navigate to={currentUser ? "/dashboard" : "/login"} replace />} />
 
-        {/* Catch-all route */}
+        {/* Catch-all route (YOUR EXISTING CODE) */}
         <Route path="*" element={<Navigate to={currentUser ? "/dashboard" : "/login"} replace />} />
       </Routes>
     </BrowserRouter>
