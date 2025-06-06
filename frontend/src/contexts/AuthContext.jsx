@@ -9,7 +9,7 @@ import {
   sendPasswordResetEmail,
   updateProfile
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'; // <<< IMPORTED serverTimestamp
 
 const AuthContext = React.createContext();
 
@@ -19,24 +19,26 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState(null); // To store Firestore user data
+  const [loading, setLoading] = useState(true); // Renamed from loadingAuth to match your code
+  const [userData, setUserData] = useState(null);
 
   async function signup(email, password, displayName) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    // Update Firebase Auth profile
     await updateProfile(userCredential.user, { displayName });
 
-    // Create user document in Firestore
     const userRef = doc(db, "users", userCredential.user.uid);
-    await setDoc(userRef, {
+    // User data to be stored in Firestore
+    const newUserDocument = {
       uid: userCredential.user.uid,
       email: email,
       displayName: displayName,
-      role: "Member", // Default role
-      createdAt: new Date()
-    });
-    // Note: currentUser will be set by onAuthStateChanged
+      role: "Team_Member", // <<< CHANGED: Default role to "Team_Member" as discussed
+      createdAt: serverTimestamp() // <<< SUGGESTION: Use serverTimestamp for consistency
+      // photoURL: userCredential.user.photoURL || null, // Optional: if you want to store this
+    };
+    await setDoc(userRef, newUserDocument);
+    // userData will be populated by onAuthStateChanged after this, or you can set it here too
+    // setUserData(newUserDocument); // This would provide immediate userData but might be slightly out of sync if onAuthStateChanged runs immediately after
     return userCredential;
   }
 
@@ -45,7 +47,7 @@ export function AuthProvider({ children }) {
   }
 
   function logout() {
-    setUserData(null); // Clear Firestore user data on logout
+    setUserData(null);
     return signOut(auth);
   }
 
@@ -53,49 +55,66 @@ export function AuthProvider({ children }) {
     return sendPasswordResetEmail(auth, email);
   }
 
-  // Function to fetch user data from Firestore
   async function fetchUserData(userId) {
     if (!userId) {
       setUserData(null);
       return;
     }
+    console.log("AuthContext: Fetching user data for UID:", userId); // Debug log
     try {
       const userDocRef = doc(db, "users", userId);
       const userDocSnap = await getDoc(userDocRef);
       if (userDocSnap.exists()) {
-        setUserData({ id: userDocSnap.id, ...userDocSnap.data() });
+        console.log("AuthContext: User document found:", userDocSnap.data()); // Debug log
+        setUserData({ id: userDocSnap.id, ...userDocSnap.data() }); // Storing id as well, which is user.uid
       } else {
-        console.log("No such user document in Firestore!");
-        setUserData(null);
+        console.warn("AuthContext: No such user document in Firestore for UID:", userId);
+        // If a user exists in Auth but not in Firestore users collection (e.g., manual import or error during signup)
+        // You might want to create a default document here or handle it based on your app's logic.
+        // For now, setting userData to at least have basic auth info if Firestore doc is missing.
+        const authUser = auth.currentUser;
+        if (authUser && authUser.uid === userId) {
+            setUserData({
+                uid: authUser.uid,
+                email: authUser.email,
+                displayName: authUser.displayName,
+                role: "Team_Member", // Fallback default role
+            });
+        } else {
+            setUserData(null);
+        }
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error("AuthContext: Error fetching user data:", error);
       setUserData(null);
     }
   }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("AuthContext: onAuthStateChanged event. User authenticated:", !!user); // Debug log
       setCurrentUser(user);
       if (user) {
-        await fetchUserData(user.uid); // Fetch Firestore data when auth state changes
+        await fetchUserData(user.uid);
       } else {
-        setUserData(null); // Clear Firestore user data if no user
+        setUserData(null);
       }
-      setLoading(false);
+      setLoading(false); // Use 'loading' as per your state variable name
     });
 
-    return unsubscribe; // Cleanup subscription on unmount
+    return unsubscribe;
   }, []);
 
   const value = {
     currentUser,
-    userData, // Expose Firestore user data
+    userData,
+    loading, // Use 'loading'
     signup,
     login,
     logout,
     resetPassword,
-    fetchUserData // Expose fetchUserData if needed elsewhere
+    fetchUserData, // Exposing this is fine
+    setUserData // <<< NEW: Expose setUserData so other components can update context if needed
   };
 
   return (
