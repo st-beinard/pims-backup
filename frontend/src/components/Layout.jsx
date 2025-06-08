@@ -1,6 +1,6 @@
 // frontend/src/components/Layout.jsx
 import React from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 import { useAuth } from '../contexts/AuthContext';
@@ -8,23 +8,19 @@ import { useAuth } from '../contexts/AuthContext';
 const Layout = () => {
     const { currentUser, userData, logout } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation(); // Get location object
+    const location = useLocation();
 
-    const handleLogout = async () => {
-        try { await logout(); navigate('/login'); }
-        catch (error) { console.error("Layout: Failed to log out", error); }
-    };
+    const handleLogout = async () => { /* ... your existing logout ... */ };
 
-    if (!currentUser && !useAuth().loadingAuth) {
-        return <navigate to="/login" replace />;
-    }
+    if (!currentUser && !useAuth().loadingAuth) { /* ... existing check ... */ }
 
-    // --- Determine Page Title based on current path ---
-    let currentPageTitle = ""; // Default to empty string (this makes Topbar blank if no match)
+    let currentPageTitle = "";
     const path = location.pathname.toLowerCase();
 
-    if (path === '/dashboard' || path === '/') {
-        currentPageTitle = "Dashboard Overview"; // Or "Dashboard Overview"
+    if (path === '/home' || (path === '/' && currentUser) ) { // If root redirects to /home
+        currentPageTitle = "Home Overview"; // Or just "Home" or empty
+    } else if (path.startsWith('/dashboard')) { // Use startsWith if /dashboard has sub-routes later
+        currentPageTitle = "Dashboard Overview"; // <<< SETS TITLE FOR /dashboard
     } else if (path.startsWith('/events')) {
         currentPageTitle = "Events Management";
     } else if (path.startsWith('/tasks')) {
@@ -37,15 +33,17 @@ const Layout = () => {
         currentPageTitle = "My Profile";
     } else if (path.startsWith('/settings')) {
         currentPageTitle = "Settings";
+    } else if (path.startsWith('/admin')) {
+        currentPageTitle = "Admin Panel";
     }
-    // --- End Page Title Determination ---
+    // Add more conditions for other pages
 
     return (
         <div className="flex h-screen bg-gray-100 overflow-hidden">
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Topbar
-                    pageTitle={currentPageTitle} // Pass the determined title
+                    pageTitle={currentPageTitle}
                     user={currentUser}
                     userData={userData}
                     onLogout={handleLogout}

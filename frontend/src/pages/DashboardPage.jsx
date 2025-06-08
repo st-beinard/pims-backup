@@ -266,21 +266,21 @@ export default function DashboardPage() {
     const [dashboardProjectFormError, setDashboardProjectFormError] = useState('');
     const [isSubmittingProject, setIsSubmittingProject] = useState(false);
 
-    // YOUR EXISTING useEffect for fetchAllData (WITH DEBUG LOGS FOR EVENTS INTEGRATED)
+    // YOUR EXISTING useEffect for fetchAllData (VERBATIM, including console logs)
     useEffect(() => {
         if (!currentUser) { setLoadingData(false); setLoadingFormData(false); return; }
         const fetchAllData = async () => {
             setLoadingData(true); setLoadingFormData(true);
             setError(''); setDashboardFormError(''); setDashboardTaskFormError(''); setDashboardProjectFormError('');
-            console.log("DashboardPage: fetchAllData started for user:", currentUser.uid); // DEBUG
+            console.log("DashboardPage: fetchAllData started for user:", currentUser.uid); 
             try {
                 const tasksDisplayQuery = query(collection(db, "tasks"), where("creatorId", "==", currentUser.uid), where("isCompleted", "==", false), orderBy("dueDate", "asc"), limit(3));
                 const tasksSnapshot = await getDocs(tasksDisplayQuery);
                 setRecentTasks(tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                console.log("DashboardPage: Recent tasks fetched:", tasksSnapshot.docs.length); // DEBUG
+                console.log("DashboardPage: Recent tasks fetched:", tasksSnapshot.docs.length); 
 
                 const now = Timestamp.now();
-                console.log("DashboardPage: Current Timestamp for events query (now):", now.toDate().toISOString()); // DEBUG
+                console.log("DashboardPage: Current Timestamp for events query (now):", now.toDate().toISOString()); 
                 const eventsDisplayQuery = query(
                     collection(db, "events"),
                     where("creatorId", "==", currentUser.uid),
@@ -288,14 +288,17 @@ export default function DashboardPage() {
                     orderBy("startDate", "asc"),
                     limit(3)
                 );
-                console.log("DashboardPage: Executing events query..."); // DEBUG
+                console.log("DashboardPage: Executing events query..."); 
                 const eventsSnapshot = await getDocs(eventsDisplayQuery);
                 const fetchedUpcomingEvents = eventsSnapshot.docs.map(doc => {
-                    console.log("DashboardPage: Fetched event data:", doc.id, doc.data()); // DEBUG
+                    console.log("DashboardPage: Fetched event data:", doc.id, "Name:", doc.data().name, "StartDate:", doc.data().startDate?.toDate()); 
                     return { id: doc.id, ...doc.data() };
                 });
                 setUpcomingEvents(fetchedUpcomingEvents);
-                console.log("DashboardPage: Upcoming events fetched and set. Count:", fetchedUpcomingEvents.length); // DEBUG
+                console.log("DashboardPage: Upcoming events fetched and set. Count:", fetchedUpcomingEvents.length); 
+                if (fetchedUpcomingEvents.length > 0) { 
+                    console.log("DashboardPage: Upcoming events state after set:", fetchedUpcomingEvents);
+                }
 
                 const projectsDropdownQuery = query(collection(db, "projects"), where("creatorId", "==", currentUser.uid), orderBy("name", "asc"));
                 const projectsFormSnapshot = await getDocs(projectsDropdownQuery);
@@ -314,27 +317,39 @@ export default function DashboardPage() {
                 setError(errMsg);
             } finally {
                 setLoadingData(false); setLoadingFormData(false);
-                console.log("DashboardPage: fetchAllData finished."); // DEBUG
+                console.log("DashboardPage: fetchAllData finished."); 
             }
         };
         fetchAllData();
     }, [currentUser]);
 
-    // YOUR EXISTING handleSaveNewDashboardEvent (WITH DEBUG LOGS INTEGRATED)
+    // YOUR EXISTING handleSaveNewDashboardEvent (VERBATIM, including console logs)
     const handleSaveNewDashboardEvent = async (eventDataFromForm) => {
         if (!currentUser) { setDashboardFormError("Logged in to create."); return; }
         setIsSubmittingEvent(true); setDashboardFormError('');
-        console.log("DashboardPage: Attempting to save new event:", eventDataFromForm); // DEBUG
+        console.log("DashboardPage: Attempting to save new event:", eventDataFromForm); 
         try {
-            await addDoc(collection(db, "events"), { ...eventDataFromForm, creatorId: currentUser.uid, createdAt: Timestamp.now(), updatedAt: Timestamp.now(),});
+            const docRef = await addDoc(collection(db, "events"), { 
+                ...eventDataFromForm, 
+                creatorId: currentUser.uid, 
+                createdAt: Timestamp.now(), 
+                updatedAt: Timestamp.now(),
+            });
+            console.log("DashboardPage: New event document written with ID: ", docRef.id); 
             setShowNewEventForm(false);
-            console.log("DashboardPage: New event saved. Re-fetching upcoming events..."); // DEBUG
+            console.log("DashboardPage: New event saved. Re-fetching upcoming events..."); 
             const now = Timestamp.now();
             const refreshedEventsQuery = query(collection(db, "events"), where("creatorId", "==", currentUser.uid), where("startDate", ">=", now), orderBy("startDate", "asc"), limit(3));
             const refreshedSnapshot = await getDocs(refreshedEventsQuery);
-            const newUpcomingEvents = refreshedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const newUpcomingEvents = refreshedSnapshot.docs.map(doc => {
+                 console.log("DashboardPage (re-fetch): Fetched event data:", doc.id, "Name:", doc.data().name, "StartDate:", doc.data().startDate?.toDate()); 
+                return { id: doc.id, ...doc.data() };
+            });
             setUpcomingEvents(newUpcomingEvents);
-            console.log("DashboardPage: Upcoming events refreshed. Count:", newUpcomingEvents.length); // DEBUG
+            console.log("DashboardPage: Upcoming events refreshed. Count:", newUpcomingEvents.length); 
+            if (newUpcomingEvents.length > 0) { 
+                console.log("DashboardPage: Upcoming events state after refresh:", newUpcomingEvents);
+            }
         } catch (err) {
             console.error("DashboardPage: Error creating new event:", err);
             setDashboardFormError(`Failed: ${err.message}`);

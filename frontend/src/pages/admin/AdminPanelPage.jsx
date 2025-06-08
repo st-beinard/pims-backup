@@ -34,7 +34,7 @@ const UserListItem = ({ user, onEditRole, onDeleteUser }) => {
 // --- Placeholder RoleEditForm (ensure this is defined correctly) ---
 const RoleEditForm = ({ userToEdit, onSaveRole, onCancel, isSaving }) => {
     const [newRole, setNewRole] = useState(userToEdit?.role || 'Team_Member');
-    const availableRoles = ["Team_Member", "Facilitator", "Event_Coordinator", "Admin", "Super_Admin"];
+    const availableRoles = ["Team_Member", "Facilitator", "Admin", "Super_Admin"];
 
     if (!userToEdit) return null;
 
