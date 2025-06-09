@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { db } from '../firebaseConfig';
 import { collection, query, orderBy, getDocs, Timestamp } from 'firebase/firestore';
 
-// NO Sidebar or Topbar import here
+
 
 // --- Child Components (SummaryCard, AttendanceRow, Icons - Defined here for self-containment) ---
 const UserGroupIcon = () => <span className="text-xl">👥</span>;
