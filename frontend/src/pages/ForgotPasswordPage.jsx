@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext'; // Ensure this path is correct
 import { Link, useNavigate } from 'react-router-dom'; // Added useNavigate for potential future use
 
+// ***** 1. IMPORT THE LOGO *****
+import AppLogo from '../assets/Logo.png'; // Path to your Logo.png
+
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
     const { resetPassword, loadingAuth } = useAuth(); // Assuming loadingAuth is available from context
@@ -44,8 +47,16 @@ export default function ForgotPasswordPage() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 via-indigo-100 to-purple-100 p-4">
             <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-2xl">
-                {/* Titles Section - No logo as per previous request */}
-                <div className="text-center mb-6">
+                {/* Titles Section - WITH Centered Logo */}
+                <div className="text-center mb-6"> {/* Adjusted mb-6 from mb-8 for potentially tighter spacing with logo */}
+                    {/* ***** 2. ADD THE CENTERED LOGO IMAGE HERE ***** */}
+                    <img 
+                        src={AppLogo} 
+                        alt="PIMS Center Logo" 
+                        // Using the same styling as LoginPage for consistency
+                        // Adjust w-48, h-auto, and mb-4 as needed
+                        className="w-48 h-auto mx-auto mb-4" 
+                    /> 
                     <h1 className="text-2xl font-bold text-gray-800">PIMS</h1>
                     <p className="text-sm text-gray-500">Project and Event Management</p>
                     <h2 className="text-xl font-semibold text-gray-700 mt-4">Reset your Password</h2>
@@ -53,7 +64,7 @@ export default function ForgotPasswordPage() {
 
                 {!message && ( // Hide form if success message is shown
                     <p className="text-sm text-gray-600 mb-6 text-center">
-                        Please provide the email address that you used when you signed up for your account.
+                        
                         We will send you an email with instructions to reset your password.
                     </p>
                 )}
@@ -86,7 +97,7 @@ export default function ForgotPasswordPage() {
                             />
                         </div>
                         <button
-                            disabled={loading}
+                            disabled={loading || loadingAuth} // Also disable if loadingAuth
                             type="submit"
                             className="w-full py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                         >
@@ -100,7 +111,6 @@ export default function ForgotPasswordPage() {
                         Back to Log In
                     </Link>
                 </div>
-                {/* Removed "Need an account? Sign Up" link as it's less common on a forgot password page for a specific admin type */}
             </div>
             <p className="mt-8 text-xs text-center text-gray-500">
                 © {new Date().getFullYear()} PIMS. All rights reserved.

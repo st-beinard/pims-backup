@@ -32,9 +32,9 @@ export function AuthProvider({ children }) {
       uid: userCredential.user.uid,
       email: email,
       displayName: displayName,
-      role: "Team_Member", // <<< CHANGED: Default role to "Team_Member" as discussed
+      role: "Team_Member", // <<< CHANGED: Default role to "Team_Member"
       createdAt: serverTimestamp() // <<< SUGGESTION: Use serverTimestamp for consistency
-      // photoURL: userCredential.user.photoURL || null, // Optional: if you want to store this
+      
     };
     await setDoc(userRef, newUserDocument);
     // userData will be populated by onAuthStateChanged after this, or you can set it here too
@@ -69,9 +69,7 @@ export function AuthProvider({ children }) {
         setUserData({ id: userDocSnap.id, ...userDocSnap.data() }); // Storing id as well, which is user.uid
       } else {
         console.warn("AuthContext: No such user document in Firestore for UID:", userId);
-        // If a user exists in Auth but not in Firestore users collection (e.g., manual import or error during signup)
-        // You might want to create a default document here or handle it based on your app's logic.
-        // For now, setting userData to at least have basic auth info if Firestore doc is missing.
+        
         const authUser = auth.currentUser;
         if (authUser && authUser.uid === userId) {
             setUserData({
@@ -113,7 +111,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     resetPassword,
-    fetchUserData, // Exposing this is fine
+    fetchUserData, 
     setUserData // <<< NEW: Expose setUserData so other components can update context if needed
   };
 

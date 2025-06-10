@@ -6,7 +6,7 @@ import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc } from '
 
 // --- Placeholder UserListItem (ensure this is defined correctly) ---
 const UserListItem = ({ user, onEditRole, onDeleteUser }) => {
-    // ... (Your UserListItem JSX and logic)
+    // . Your UserListItem JSX and logic
     return (
         <div className="flex items-center justify-between p-3 border-b hover:bg-gray-50">
             <div>
@@ -31,7 +31,7 @@ const UserListItem = ({ user, onEditRole, onDeleteUser }) => {
 };
 // --- End UserListItem ---
 
-// --- Placeholder RoleEditForm (ensure this is defined correctly) ---
+// --- Placeholder RoleEditForm  ---
 const RoleEditForm = ({ userToEdit, onSaveRole, onCancel, isSaving }) => {
     const [newRole, setNewRole] = useState(userToEdit?.role || 'Team_Member');
     const availableRoles = ["Team_Member", "Facilitator", "Admin", "Super_Admin"];
