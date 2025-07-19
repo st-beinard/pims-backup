@@ -1,26 +1,23 @@
 // frontend/src/components/events/EventForm.jsx
 import React, { useState, useEffect } from 'react';
-import { Timestamp } from 'firebase/firestore'; // Import Timestamp
+import { Timestamp } from 'firebase/firestore';
 
 const EventForm = ({ onSubmit, initialData, onCancel, submitButtonText = "Save Event" }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
-    // Store dates as YYYY-MM-DDTHH:mm for datetime-local input
     const [startDateStr, setStartDateStr] = useState('');
     const [endDateStr, setEndDateStr] = useState('');
     const [venue, setVenue] = useState('');
-    const [status, setStatus] = useState('Upcoming'); // Default status
+    // const [status, setStatus] = useState('Upcoming'); // <<< REMOVED status state
     const [error, setError] = useState('');
 
     useEffect(() => {
         if (initialData) {
             setName(initialData.name || '');
             setDescription(initialData.description || '');
-            // Convert Firestore Timestamps to YYYY-MM-DDTHH:mm strings for input fields
             if (initialData.startDate && initialData.startDate.seconds) {
                 const sd = new Date(initialData.startDate.seconds * 1000);
-                // Adjust for timezone offset to display correctly in datetime-local
-                const timezoneOffset = sd.getTimezoneOffset() * 60000; // offset in milliseconds
+                const timezoneOffset = sd.getTimezoneOffset() * 60000;
                 const localStartDate = new Date(sd.getTime() - timezoneOffset);
                 setStartDateStr(localStartDate.toISOString().slice(0, 16));
             } else {
@@ -35,17 +32,16 @@ const EventForm = ({ onSubmit, initialData, onCancel, submitButtonText = "Save E
                 setEndDateStr('');
             }
             setVenue(initialData.venue || '');
-            setStatus(initialData.status || 'Upcoming');
+            // setStatus(initialData.status || 'Upcoming'); // <<< REMOVED
         } else {
-            // Reset form for new entry
             setName('');
             setDescription('');
             setStartDateStr('');
             setEndDateStr('');
             setVenue('');
-            setStatus('Upcoming');
+            // setStatus('Upcoming'); // <<< REMOVED
         }
-    }, [initialData]); // Re-populate form when initialData changes
+    }, [initialData]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -62,10 +58,10 @@ const EventForm = ({ onSubmit, initialData, onCancel, submitButtonText = "Save E
         const eventData = {
             name: name.trim(),
             description: description.trim(),
-            startDate: Timestamp.fromDate(new Date(startDateStr)), // Convert string back to Firestore Timestamp
+            startDate: Timestamp.fromDate(new Date(startDateStr)),
             endDate: endDateStr ? Timestamp.fromDate(new Date(endDateStr)) : null,
             venue: venue.trim(),
-            status,
+            // status, // <<< REMOVED status from formData
         };
         await onSubmit(eventData);
     };
@@ -108,6 +104,8 @@ const EventForm = ({ onSubmit, initialData, onCancel, submitButtonText = "Save E
                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
 
+            {/* --- STATUS DROPDOWN REMOVED --- */}
+            {/*
             <div>
                 <label htmlFor="eventStatus" className="block text-sm font-medium text-gray-700">Status</label>
                 <select id="eventStatus" value={status} onChange={(e) => setStatus(e.target.value)}
@@ -116,9 +114,12 @@ const EventForm = ({ onSubmit, initialData, onCancel, submitButtonText = "Save E
                     <option value="Ongoing">Ongoing</option>
                     <option value="Completed">Completed</option>
                     <option value="Canceled">Canceled</option>
-                    <option value="Pending">Pending</option> {/* Added Pending status */}
+                    <option value="Pending">Pending</option>
                 </select>
             </div>
+            */}
+            {/* --- END REMOVED SECTION --- */}
+
 
             <div className="flex justify-end space-x-3 pt-2">
                 <button type="button" onClick={onCancel}

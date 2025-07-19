@@ -7,13 +7,9 @@ import {
     collection, query, where, orderBy, limit, getDocs, Timestamp, addDoc
 } from "firebase/firestore";
 
-// ***** 1. IMPORT YOUR EXISTING TaskForm *****
-import TaskForm from '../components/tasks/TaskForm.jsx'; // Path to YOUR TaskForm
+// NO Sidebar or Topbar import here (as it's handled by Layout.jsx)
 
-// ***** 2. IMPORT THE NEW TaskModalWrapper *****
-import TaskModalWrapper from '../components/TaskModalWrapper.jsx'; // Path to the new wrapper
-
-// --- Child Components for Dashboard Content (QuickActionButton, TaskItem, EventItem - KEEP AS IS, VERBATIM from your code) ---
+// --- Child Components for Dashboard Content (YOUR EXISTING CODE - VERBATIM) ---
 const QuickActionButton = ({ title, icon, onClick }) => (
      <button
         onClick={onClick}
@@ -52,11 +48,10 @@ const EventItem = ({ event }) => (
         </div>
     </div>
 );
-// --- End Child Components ---
+// --- End YOUR EXISTING Child Components ---
 
-// --- EventForm Component (KEEP AS IS, VERBATIM from your code) ---
+// --- EventForm Component (YOUR EXISTING DETAILED EventForm - VERBATIM) ---
 const EventForm = ({ onSubmit, onCancel, initialData = null, submitButtonText = "Create Event" }) => {
-    // ... (Your existing EventForm code - NO CHANGES HERE)
     const [name, setName] = useState(initialData?.name || '');
     const [description, setDescription] = useState(initialData?.description || '');
     const toDatetimeLocal = (timestamp) => {
@@ -117,9 +112,55 @@ const EventForm = ({ onSubmit, onCancel, initialData = null, submitButtonText = 
 };
 // --- End EventForm ---
 
-// --- TeamOverviewModal Component (KEEP AS IS, VERBATIM from your code) ---
+// --- TaskForm Component (YOUR EXISTING DETAILED TaskForm - VERBATIM) ---
+const TaskForm = ({ onSubmit, onCancel, projectsList = [], usersList = [], initialData = null, submitButtonText = "Create Task" }) => {
+    const [title, setTitle] = useState(initialData?.title || '');
+    const [projectId, setProjectId] = useState(initialData?.projectId || '');
+    const [assigneeId, setAssigneeId] = useState(initialData?.assigneeId || '');
+    const [dueDate, setDueDate] = useState(initialData?.dueDate?.seconds ? new Date(initialData.dueDate.seconds * 1000).toISOString().split('T')[0] : '');
+    const [status, setStatus] = useState(initialData?.status || 'To Do');
+    const [formSpecificError, setFormSpecificError] = useState('');
+
+    useEffect(() => {
+        setTitle(initialData?.title || '');
+        setProjectId(initialData?.projectId || '');
+        setAssigneeId(initialData?.assigneeId || '');
+        setDueDate(initialData?.dueDate?.seconds ? new Date(initialData.dueDate.seconds * 1000).toISOString().split('T')[0] : '');
+        setStatus(initialData?.status || 'To Do');
+        setFormSpecificError('');
+    }, [initialData]);
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setFormSpecificError('');
+        if (!title.trim()) { setFormSpecificError("Task title is required."); return; }
+        const formData = {
+            title: title.trim(), projectId: projectId || null, assigneeId: assigneeId || null,
+            dueDate: dueDate ? Timestamp.fromDate(new Date(dueDate)) : null, status: status,
+        };
+        onSubmit(formData);
+    };
+    const inputStyle = "mt-1 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500";
+    const labelStyle = "block text-sm font-medium text-gray-700";
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+            <form onSubmit={handleSubmit} className="p-6 sm:p-8 bg-white rounded-xl shadow-2xl w-full max-w-lg space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900">{initialData?.id ? "Edit Task" : "New Task"}</h2>
+                {formSpecificError && <p className="text-red-600 bg-red-50 p-3 rounded text-sm border border-red-200">{formSpecificError}</p>}
+                <div><label htmlFor="dash-task-title" className={labelStyle}>Task Title <span className="text-red-500">*</span></label><input id="dash-task-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className={inputStyle} /></div>
+                <div><label htmlFor="dash-task-project" className={labelStyle}>Project</label><select id="dash-task-project" value={projectId} onChange={(e) => setProjectId(e.target.value)} className={inputStyle}><option value="">None</option>{projectsList.map(project => (<option key={project.id} value={project.id}>{project.name}</option>))}</select></div>
+                <div><label htmlFor="dash-task-assignee" className={labelStyle}>Assign To</label><select id="dash-task-assignee" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)} className={inputStyle}><option value="">Unassigned</option>{usersList.map(user => (<option key={user.uid} value={user.uid}>{user.displayName || user.email}</option>))}</select></div>
+                <div><label htmlFor="dash-task-duedate" className={labelStyle}>Due Date</label><input id="dash-task-duedate" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className={inputStyle} /></div>
+                <div><label htmlFor="dash-task-status" className={labelStyle}>Status</label><select id="dash-task-status" value={status} onChange={(e) => setStatus(e.target.value)} className={inputStyle}><option value="To Do">To Do</option><option value="In Progress">In Progress</option><option value="Pending">Pending</option><option value="Completed">Completed</option></select></div>
+                <div className="flex justify-end space-x-3 pt-5 border-t border-gray-200 mt-6"><button type="button" onClick={onCancel} className="px-6 py-2 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 rounded-md shadow-sm">Cancel</button><button type="submit" className="px-6 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 border rounded-md shadow-sm">{submitButtonText}</button></div>
+            </form>
+        </div>
+    );
+};
+// --- End TaskForm ---
+
+// --- TeamOverviewModal Component (YOUR EXISTING TeamOverviewModal - VERBATIM) ---
 const TeamOverviewModal = ({ onClose, teamMembers = [] }) => {
-    // ... (Your existing TeamOverviewModal code - NO CHANGES HERE)
     const [searchTerm, setSearchTerm] = useState('');
     const filteredMembers = useMemo(() => {
         if (!searchTerm.trim()) { return teamMembers; }
@@ -141,9 +182,8 @@ const TeamOverviewModal = ({ onClose, teamMembers = [] }) => {
 };
 // --- End TeamOverviewModal ---
 
-// --- DashboardProjectForm Component (KEEP AS IS, VERBATIM from your code) ---
+// --- DashboardProjectForm Component (YOUR EXISTING DashboardProjectForm - VERBATIM) ---
 const DashboardProjectForm = ({ onSubmit, onCancel, usersList = [], initialData = null, submitButtonText = "Create Project" }) => {
-    // ... (Your existing DashboardProjectForm code - NO CHANGES HERE)
     const [name, setName] = useState(initialData?.name || '');
     const [description, setDescription] = useState(initialData?.description || '');
     const [startDate, setStartDate] = useState(initialData?.startDate?.seconds ? new Date(initialData.startDate.seconds * 1000).toISOString().split('T')[0] : '');
@@ -205,7 +245,7 @@ const DashboardProjectForm = ({ onSubmit, onCancel, usersList = [], initialData 
 
 
 export default function DashboardPage() {
-    // YOUR EXISTING STATE DECLARATIONS (VERBATIM) - NO CHANGES HERE
+    // YOUR EXISTING STATE DECLARATIONS (VERBATIM)
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [recentTasks, setRecentTasks] = useState([]);
@@ -216,32 +256,27 @@ export default function DashboardPage() {
     const [dashboardFormError, setDashboardFormError] = useState('');
     const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
     const [showNewTaskForm, setShowNewTaskForm] = useState(false);
-    const [dashboardTaskFormError, setDashboardTaskFormError] = useState(''); // Error specific to task form on dashboard
+    const [dashboardTaskFormError, setDashboardTaskFormError] = useState('');
     const [isSubmittingTask, setIsSubmittingTask] = useState(false);
     const [projectsForForm, setProjectsForForm] = useState([]);
     const [usersForForm, setUsersForForm] = useState([]);
-    const [loadingFormData, setLoadingFormData] = useState(false); // For dropdowns
+    const [loadingFormData, setLoadingFormData] = useState(false);
     const [showTeamOverview, setShowTeamOverview] = useState(false);
     const [showNewProjectForm, setShowNewProjectForm] = useState(false);
     const [dashboardProjectFormError, setDashboardProjectFormError] = useState('');
     const [isSubmittingProject, setIsSubmittingProject] = useState(false);
 
-
-    // YOUR EXISTING useEffect for fetchAllData (VERBATIM) - NO CHANGES HERE
+    // YOUR EXISTING useEffect for fetchAllData (VERBATIM)
     useEffect(() => {
         if (!currentUser) { setLoadingData(false); setLoadingFormData(false); return; }
         const fetchAllData = async () => {
             setLoadingData(true); setLoadingFormData(true);
             setError(''); setDashboardFormError(''); setDashboardTaskFormError(''); setDashboardProjectFormError('');
-            console.log("DashboardPage: fetchAllData started for user:", currentUser.uid); 
             try {
                 const tasksDisplayQuery = query(collection(db, "tasks"), where("creatorId", "==", currentUser.uid), where("isCompleted", "==", false), orderBy("dueDate", "asc"), limit(3));
                 const tasksSnapshot = await getDocs(tasksDisplayQuery);
                 setRecentTasks(tasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                console.log("DashboardPage: Recent tasks fetched:", tasksSnapshot.docs.length); 
-
                 const now = Timestamp.now();
-                console.log("DashboardPage: Current Timestamp for events query (now):", now.toDate().toISOString()); 
                 const eventsDisplayQuery = query(
                     collection(db, "events"),
                     where("creatorId", "==", currentUser.uid),
@@ -249,18 +284,10 @@ export default function DashboardPage() {
                     orderBy("startDate", "asc"),
                     limit(3)
                 );
-                console.log("DashboardPage: Executing events query..."); 
                 const eventsSnapshot = await getDocs(eventsDisplayQuery);
-                const fetchedUpcomingEvents = eventsSnapshot.docs.map(doc => {
-                    console.log("DashboardPage: Fetched event data:", doc.id, "Name:", doc.data().name, "StartDate:", doc.data().startDate?.toDate()); 
-                    return { id: doc.id, ...doc.data() };
-                });
+                const fetchedUpcomingEvents = eventsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 setUpcomingEvents(fetchedUpcomingEvents);
-                console.log("DashboardPage: Upcoming events fetched and set. Count:", fetchedUpcomingEvents.length); 
-                if (fetchedUpcomingEvents.length > 0) { 
-                    console.log("DashboardPage: Upcoming events state after set:", fetchedUpcomingEvents);
-                }
-
+                
                 const projectsDropdownQuery = query(collection(db, "projects"), where("creatorId", "==", currentUser.uid), orderBy("name", "asc"));
                 const projectsFormSnapshot = await getDocs(projectsDropdownQuery);
                 setProjectsForForm(projectsFormSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -268,7 +295,6 @@ export default function DashboardPage() {
                 const usersDropdownQuery = query(collection(db, "users"), orderBy("displayName", "asc"));
                 const usersFormSnapshot = await getDocs(usersDropdownQuery);
                 setUsersForForm(usersFormSnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() })));
-
             } catch (err) {
                 console.error("DashboardPage: Error in fetchAllData:", err);
                 let errMsg = "Failed to load initial data.";
@@ -278,39 +304,23 @@ export default function DashboardPage() {
                 setError(errMsg);
             } finally {
                 setLoadingData(false); setLoadingFormData(false);
-                console.log("DashboardPage: fetchAllData finished."); 
             }
         };
         fetchAllData();
     }, [currentUser]);
 
-    // YOUR EXISTING handleSaveNewDashboardEvent (VERBATIM) - NO CHANGES HERE
+    // YOUR EXISTING handleSaveNewDashboardEvent (VERBATIM)
     const handleSaveNewDashboardEvent = async (eventDataFromForm) => {
         if (!currentUser) { setDashboardFormError("Logged in to create."); return; }
         setIsSubmittingEvent(true); setDashboardFormError('');
-        console.log("DashboardPage: Attempting to save new event:", eventDataFromForm); 
         try {
-            const docRef = await addDoc(collection(db, "events"), { 
-                ...eventDataFromForm, 
-                creatorId: currentUser.uid, 
-                createdAt: Timestamp.now(), 
-                updatedAt: Timestamp.now(),
-            });
-            console.log("DashboardPage: New event document written with ID: ", docRef.id); 
+            await addDoc(collection(db, "events"), { ...eventDataFromForm, creatorId: currentUser.uid, createdAt: Timestamp.now(), updatedAt: Timestamp.now(),});
             setShowNewEventForm(false);
-            console.log("DashboardPage: New event saved. Re-fetching upcoming events..."); 
             const now = Timestamp.now();
             const refreshedEventsQuery = query(collection(db, "events"), where("creatorId", "==", currentUser.uid), where("startDate", ">=", now), orderBy("startDate", "asc"), limit(3));
             const refreshedSnapshot = await getDocs(refreshedEventsQuery);
-            const newUpcomingEvents = refreshedSnapshot.docs.map(doc => {
-                 console.log("DashboardPage (re-fetch): Fetched event data:", doc.id, "Name:", doc.data().name, "StartDate:", doc.data().startDate?.toDate()); 
-                return { id: doc.id, ...doc.data() };
-            });
-            setUpcomingEvents(newUpcomingEvents);
-            console.log("DashboardPage: Upcoming events refreshed. Count:", newUpcomingEvents.length); 
-            if (newUpcomingEvents.length > 0) { 
-                console.log("DashboardPage: Upcoming events state after refresh:", newUpcomingEvents);
-            }
+            setUpcomingEvents(refreshedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            console.log("DashboardPage: New event created and upcoming events refreshed!");
         } catch (err) {
             console.error("DashboardPage: Error creating new event:", err);
             setDashboardFormError(`Failed: ${err.message}`);
@@ -319,22 +329,13 @@ export default function DashboardPage() {
         }
     };
 
-    // YOUR EXISTING handleSaveNewDashboardTask (VERBATIM) - NO CHANGES HERE
-    // This function will be passed to the TaskModalWrapper -> TaskForm
+    // YOUR EXISTING handleSaveNewDashboardTask (VERBATIM)
     const handleSaveNewDashboardTask = async (taskDataFromForm) => {
         if (!currentUser) { setDashboardTaskFormError("Logged in to create."); return; }
         setIsSubmittingTask(true); setDashboardTaskFormError('');
         try {
-            // taskDataFromForm.dueDate is already a Timestamp if set, or null, from your TaskForm.jsx
-            await addDoc(collection(db, "tasks"), { 
-                ...taskDataFromForm, // This already includes title, projectId, assigneeId, dueDate (as Timestamp), status, description, priority, projectName, assigneeName
-                creatorId: currentUser.uid, 
-                createdAt: Timestamp.now(), 
-                updatedAt: Timestamp.now(), 
-                isCompleted: taskDataFromForm.status === "Completed" || taskDataFromForm.status === "Done", // Align with your TaskForm status options
-            });
+            await addDoc(collection(db, "tasks"), { ...taskDataFromForm, creatorId: currentUser.uid, createdAt: Timestamp.now(), updatedAt: Timestamp.now(), isCompleted: taskDataFromForm.status === "Completed",});
             setShowNewTaskForm(false);
-            // Refresh recent tasks (your existing logic)
             const refreshedTasksQuery = query(collection(db, "tasks"), where("creatorId", "==", currentUser.uid), where("isCompleted", "==", false), orderBy("dueDate", "asc"), limit(3));
             const refreshedTasksSnapshot = await getDocs(refreshedTasksQuery);
             setRecentTasks(refreshedTasksSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -347,7 +348,7 @@ export default function DashboardPage() {
         }
     };
 
-    // YOUR EXISTING handleSaveNewDashboardProject (VERBATIM) - NO CHANGES HERE
+    // YOUR EXISTING handleSaveNewDashboardProject (VERBATIM)
     const handleSaveNewDashboardProject = async (projectDataFromForm) => {
         if (!currentUser) { setDashboardProjectFormError("Logged in to create."); return; }
         setIsSubmittingProject(true); setDashboardProjectFormError('');
@@ -366,37 +367,20 @@ export default function DashboardPage() {
         }
     };
 
-    // YOUR EXISTING RETURN JSX (VERBATIM), only changing how TaskForm is rendered
     return (
         <div className="p-6 md:p-8">
-            {/* Event Form Modal (Your existing code) */}
+            {/* Event Form Modal */}
             {showNewEventForm && (<EventForm onSubmit={handleSaveNewDashboardEvent} onCancel={() => { setShowNewEventForm(false); setDashboardFormError(''); }} submitButtonText={isSubmittingEvent ? "Creating..." : "Create Event"}/> )}
             {dashboardFormError && !showNewEventForm && (<p className="text-red-600 bg-red-100 p-3 rounded text-sm mb-4 border border-red-300 -mt-2">{dashboardFormError}</p>)}
 
-            {/* ***** 3. MODIFIED Task Form Modal Rendering ***** */}
-            {showNewTaskForm && (
-                <TaskModalWrapper
-                    isOpen={showNewTaskForm}
-                    onClose={() => { setShowNewTaskForm(false); setDashboardTaskFormError(''); }}
-                    title="New Task" // Title for the modal shell
-                >
-                    <TaskForm // YOUR existing TaskForm component
-                        onSubmit={handleSaveNewDashboardTask}
-                        onCancel={() => { setShowNewTaskForm(false); setDashboardTaskFormError(''); }}
-                        projectsList={projectsForForm}
-                        usersList={usersForForm}
-                        // initialData={null} // For new task, initialData is null by default in your TaskForm
-                        submitButtonText={isSubmittingTask ? "Creating..." : "Create Task"}
-                    />
-                </TaskModalWrapper>
-            )}
-            {/* Display specific error for the dashboard task form if it's not shown */}
+            {/* Task Form Modal */}
+            {showNewTaskForm && (<TaskForm onSubmit={handleSaveNewDashboardTask} onCancel={() => { setShowNewTaskForm(false); setDashboardTaskFormError(''); }} projectsList={projectsForForm} usersList={usersForForm} submitButtonText={isSubmittingTask ? "Creating..." : "Create Task"}/> )}
             {dashboardTaskFormError && !showNewTaskForm && (<p className="text-red-600 bg-red-100 p-3 rounded text-sm mb-4 border border-red-300 -mt-2">{dashboardTaskFormError}</p>)}
 
-            {/* Team Overview Modal (Your existing code) */}
+            {/* Team Overview Modal */}
             {showTeamOverview && (<TeamOverviewModal onClose={() => setShowTeamOverview(false)} teamMembers={usersForForm} /> )}
 
-            {/* Project Form Modal Rendering (Your existing code) */}
+            {/* Project Form Modal Rendering */}
             {showNewProjectForm && (
                 <DashboardProjectForm
                     onSubmit={handleSaveNewDashboardProject}
@@ -409,10 +393,10 @@ export default function DashboardPage() {
                  <p className="text-red-600 bg-red-100 p-3 rounded text-sm mb-4 border border-red-300 -mt-2">{dashboardProjectFormError}</p>
             )}
 
-            {/* Quick Actions Row (Your existing code) */}
+            {/* Quick Actions Row */}
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8">
                  <QuickActionButton title="New Event" icon="➕" onClick={() => { setShowNewEventForm(true); setDashboardFormError(''); }}/>
-                 <QuickActionButton title="Add Task" icon="✔️" onClick={() => { if (loadingFormData) { alert("Data for dropdowns is loading..."); return; } setShowNewTaskForm(true); setDashboardTaskFormError(''); }}/>
+                 <QuickActionButton title="Add Task" icon="✔️" onClick={() => { if (loadingFormData) { alert("Data is loading..."); return; } setShowNewTaskForm(true); setDashboardTaskFormError(''); }}/>
                  <QuickActionButton
                     title="New Project" icon="📁"
                     onClick={() => {
@@ -421,7 +405,7 @@ export default function DashboardPage() {
                         setDashboardProjectFormError('');
                     }}
                  />
-                 <QuickActionButton title="Team" icon="👥" onClick={() => { if (loadingFormData) { alert("Data for team members is loading..."); return; } setShowTeamOverview(true); }}/>
+                 <QuickActionButton title="Team" icon="👥" onClick={() => { if (loadingFormData) { alert("Data is loading..."); return; } setShowTeamOverview(true); }}/>
             </div>
 
             {/* YOUR EXISTING ERROR DISPLAY, LOADING DISPLAY, AND CONTENT SECTIONS - VERBATIM */}

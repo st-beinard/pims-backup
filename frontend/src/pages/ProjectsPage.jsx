@@ -7,7 +7,6 @@ import {
     query, where, orderBy, Timestamp, getCountFromServer, getDoc // Ensure getDoc is imported
 } from 'firebase/firestore';
 
-// NO Sidebar or Topbar import here, they come from Layout.jsx
 
 // --- ProjectForm Component (Defined within this file) ---
 const ProjectForm = ({ onSubmit, initialData, onCancel, usersList = [], submitButtonText = "Save Project" }) => {
